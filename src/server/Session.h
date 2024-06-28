@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IStorage.h"
+
 namespace asio = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
@@ -7,8 +9,9 @@ using tcp = boost::asio::ip::tcp;
 class Session : public std::enable_shared_from_this<Session>
 {
 public:
-	Session(tcp::socket socket)
-		: _socket(std::move(socket))
+	Session(tcp::socket socket, std::shared_ptr<IStorage> db)
+		: _socket(std::move(socket)),
+		_db(db)
 	{
 		
 		std::cout << __FUNCTION__ << std::endl;
@@ -44,4 +47,5 @@ private:
 
 	tcp::socket _socket;
 	char _data[1024];
+	std::shared_ptr<IStorage> _db;
 };

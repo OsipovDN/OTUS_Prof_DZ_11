@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 
 #include "Server.h"
+#include "Storage.h"
 
 namespace asio = boost::asio;
 
@@ -22,8 +23,10 @@ int main(int argc, char* argv[])
 		{
 			short port = (unsigned short)strtoul(argv[1], NULL, 0);
 			asio::io_context context;
-
-			Server server(context, port);
+			auto db = std::make_shared<storage::Storage>();
+			db->create('A');
+			db->create('B');
+			Server server(context, port, db);
 			context.run();
 		}
 	}

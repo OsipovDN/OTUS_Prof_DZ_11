@@ -7,7 +7,6 @@ set(TEST_NAME join_server_test)
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
-set(BOOST_VERS "1.83.0")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
 file(GLOB SOURCES CONFIGURE_DEPENDS
@@ -54,7 +53,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   target_include_directories(${PROJECT_NAME} PUBLIC
     ${SRC_DIR}
     ${SRC_DIR}/Server
-    ${SRC_DIR}/SqlServant
+    ${SRC_DIR}/Storage
     )
 
 # link libraries
