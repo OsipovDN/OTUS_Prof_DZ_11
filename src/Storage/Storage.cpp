@@ -1,39 +1,40 @@
 #include "Storage.h"
 
-#define UNUSED(x) (void)(x)
+
 
 namespace storage
 {
-	bool Storage::create(std::string name)
+	void Storage::create(std::string name)
 	{
-		std::string request= "CREATE TABLE "+name+
-			"(id INTEGER PRIMARY KEY AUTOINCREMENT,"
+
+		checkRes(sqlite3_open(name.c_str(), &_db), "Error open DB");
+
+		std::string request = "CREATE TABLE IF NOT EXISTS " + name +
+			"(id INTEGER PRIMARY KEY,"
 			"name TEXT NOT NULL);";
 
-		int exit = 0;
-		exit = sqlite3_open(name.c_str(), &_db);
-		char* messaggeError;
-		exit = sqlite3_exec(_db, request.c_str(), NULL, 0, &messaggeError);
-
-		if (exit != SQLITE_OK) {
-			std::cerr << "Error Create Table" << std::endl;
-			sqlite3_free(messaggeError);
-			return 1;
-		}
-		else
-		{
-			std::cout << "Table "<< name << "created Successfully" << std::endl;
-			sqlite3_close(_db);
-			return 0;
-		}
-
+		checkRes(sqlite3_exec(_db, request.c_str(), nullptr, nullptr, &_errMsg), _errMsg);
+		checkRes(sqlite3_close(_db), "Error close DB");
 	}
-	void Storage::insert(std::string& table, int id, std::string& name)
+
+	void Storage::insert(std::string table, int id, std::string name)
 	{
-		UNUSED(table);
-		UNUSED(id);
-		UNUSED(name);
+		checkRes(sqlite3_open(table.c_str(), &_db), "Error open DB");
+
+		std::string request =
+			"INSERT INTO " + table + " (id , name) VALUES ("
+			+ std::to_string(id) + " , '" + name + "');";
+
+		checkRes(sqlite3_exec(_db, request.c_str(), nullptr, nullptr, &_errMsg), _errMsg);
+		checkRes(sqlite3_close(_db), "Error close DB");
+
 	}
+	void Storage::insertData(std::string table, std::vector<TableLine>& data)
+	{
+		for (auto line : data)
+			insert(table, line.id, line.name);
+	}
+
 	void Storage::truncate(std::string& table)
 	{
 		UNUSED(table);

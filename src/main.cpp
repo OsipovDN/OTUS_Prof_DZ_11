@@ -20,13 +20,31 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 		else
-		{
+		{	
 			short port = (unsigned short)strtoul(argv[1], NULL, 0);
 			asio::io_context context;
 			auto db = std::make_shared<storage::Storage>();
-			
 			db->create("A");
 			db->create("B");
+
+			std::vector <storage::TableLine> forTableA = {
+				{0,"lean"},
+				{1,"sweater"},
+				{2,"frank"},
+				{3,"violation"},
+				{4,"quality"},
+				{5,"precision"}
+			};
+			std::vector <storage::TableLine> forTableB = {
+				{3,"proposal"},
+				{4,"example"},
+				{5,"lake"},
+				{6,"flour"},
+				{7,"wonder"},
+				{8,"selection"}
+			};
+			db->insertData("A", forTableA);
+			db->insertData("B", forTableB);
 			Server server(context, port, db);
 			context.run();
 		}
