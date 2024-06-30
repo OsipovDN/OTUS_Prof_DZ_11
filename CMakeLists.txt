@@ -2,8 +2,8 @@
 cmake_minimum_required (VERSION 3.20)
 
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
-set(PROJECT_NAME  join_server)
-set(TEST_NAME join_server_test)
+set(PROJECT_NAME  "join_server")
+set(TEST_NAME "join_server_test")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
@@ -12,7 +12,8 @@ set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 file(GLOB SOURCES CONFIGURE_DEPENDS
     "${SRC_DIR}/*.cpp"
     "${SRC_DIR}/Server/*.cpp"
-    "${SRC_DIR}/SqlServant/*.cpp"
+    "${SRC_DIR}/Storage/*.cpp"
+    "${LIB_DIR}/SQLite/*.c"
     )
 
 project (${PROJECT_NAME} VERSION ${PROJECT_VESRION})
@@ -54,6 +55,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     ${SRC_DIR}
     ${SRC_DIR}/Server
     ${SRC_DIR}/Storage
+    ${LIB_DIR}/SQLite
     )
 
 # link libraries

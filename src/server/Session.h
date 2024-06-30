@@ -1,5 +1,4 @@
 #pragma once
-
 #include "IStorage.h"
 
 namespace asio = boost::asio;
