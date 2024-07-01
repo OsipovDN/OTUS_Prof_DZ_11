@@ -19,7 +19,7 @@ namespace storage
 	class Storage final : public IStorage
 	{
 	private:
-		sqlite3* _db;
+		sqlite3* _db= nullptr;
 		char* _errMsg{};
 		int checkRes(int code, char* msg = nullptr)
 		{
@@ -31,13 +31,13 @@ namespace storage
 			return code;
 		}
 	public:
-		Storage() : _db(nullptr) {};
+		Storage() : _db(nullptr) { checkRes(sqlite3_open("DB", &_db), "Error open DB"); };
 		void create(std::string name) override;
 		void insert(std::string table, int id, std::string name) override;
 		void insertData(std::string table, std::vector<TableLine>& data);
 		void truncate(std::string& table) override;
-		void intersection(std::string& tableA, std::string& tableB) override;
+		void intersection(std::string tableA, std::string tableB) override;
 		void symmetricDifference(std::string& tableA, std::string& tableB)override;
-		~Storage()noexcept override;
+		~Storage()noexcept override { checkRes(sqlite3_close(_db), "Error close DB"); };
 	};
 }

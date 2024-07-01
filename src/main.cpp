@@ -45,6 +45,9 @@ int main(int argc, char* argv[])
 			};
 			db->insertData("A", forTableA);
 			db->insertData("B", forTableB);
+
+			db->intersection("A", "B");
+
 			Server server(context, port, db);
 			context.run();
 		}
