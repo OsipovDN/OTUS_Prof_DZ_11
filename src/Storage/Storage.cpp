@@ -1,7 +1,5 @@
 #include "Storage.h"
 
-
-
 namespace storage
 {
 	void Storage::create(std::string name)
@@ -15,7 +13,6 @@ namespace storage
 
 	void Storage::insert(std::string table, int id, std::string name)
 	{
-
 		std::string request =
 			"INSERT INTO " + table + " (id , name) VALUES ("
 			+ std::to_string(id) + " , '" + name + "');";
@@ -39,10 +36,7 @@ namespace storage
 
 	void Storage::intersection(std::string tableA, std::string tableB)
 	{
-
 		std::string request =
-			//"SELECT id FROM " + tableA + " INTERSECT SELECT id FROM " + tableB + ";";
-
 			"SELECT " +
 			tableA + ".id, " +
 			tableA + ".name, " +
@@ -50,9 +44,8 @@ namespace storage
 			tableA + " INNER JOIN " +
 			tableB + " ON " +
 			tableA + ".id = " +
-			tableB + ".id; ";
+			tableB + ".id;";
 
-		checkRes(sqlite3_exec(_db, request.c_str(), nullptr, nullptr, &_errMsg), _errMsg);
 		sqlite3_stmt* stmt;
 		const char* stmt_tail;
 		checkRes(
@@ -63,31 +56,90 @@ namespace storage
 				&stmt,
 				&stmt_tail));
 		int res;
+		std::vector<Str> table;
 		do
 		{
 			res = sqlite3_step(stmt);
 			if (res == SQLITE_ROW)
 			{
-				std::string str;
-				for (int i = 0; i < 3; ++i)
-				{
-					auto text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, i));
-					str += text;
-					if (i !=2)
-						str += ",";
-				}
-				//Работаем со строкой
-				std::cout << str << std::endl;
+				Str str =
+					std::make_tuple(
+						sqlite3_column_int(stmt, 0),
+						std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))),
+						std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)))
+					);
+				table.push_back(str);
 			}
 		} while (res != SQLITE_DONE);
+		_collections.push_back(table);
+		printTable(0);
+		sqlite3_finalize(stmt);
+	}
+	void Storage::symmetricDifference(std::string tableA, std::string tableB)
+	{
+		std::string request =
+			"SELECT " +
+			tableA + ".id, " +
+			tableA + ".name, " +
+			tableB + ".name FROM " +
+			tableA + " LEFT JOIN " +
+			tableB + " ON " +
+			tableA + ".id = " +
+			tableB + ".id WHERE " +
+			tableB + ".name IS NULL UNION SELECT " +
+			tableB + ".id, " +
+			tableA + ".name, " +
+			tableB + ".name FROM " +
+			tableB + " LEFT JOIN " +
+			tableA + " ON " +
+			tableB + ".id = " +
+			tableA + ".id WHERE " +
+			tableA + ".id IS NULL AND " +
+			tableA + ".name IS NULL;";
+
+		sqlite3_stmt* stmt;
+		sqlite3_prepare_v2(_db, request.c_str(), -1, &stmt, nullptr);
+		std::vector<Str> table;
+		std::string aName, bName;
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
+			int id = sqlite3_column_int(stmt, 0);
+			if (sqlite3_column_text(stmt, 1) != NULL)
+			{
+				aName = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+			}
+			else
+			{
+				aName = {};
+			}
+
+			if (sqlite3_column_text(stmt, 2) != NULL)
+			{
+				bName = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+			}
+			else
+			{
+				bName = {};
+			}
+
+			table.emplace_back(std::make_tuple( id,aName,bName));
+		}
 
 		sqlite3_finalize(stmt);
 
+		_collections.push_back(table);
+		printTable(1);
+
 	}
-	void Storage::symmetricDifference(std::string& tableA, std::string& tableB)
+
+	void Storage::printTable(int num)
 	{
-		UNUSED(tableA);
-		UNUSED(tableB);
+
+		for (auto str : _collections[num])
+		{
+			std::cout << std::get<0>(str) << " , " << std::get<1>(str) << " , " << std::get<2>(str) << std::endl;
+		}
+		std::cout << std::endl;
 	}
+
 
 }

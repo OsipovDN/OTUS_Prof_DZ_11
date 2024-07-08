@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <tuple>
 
 #include "IStorage.h"
 #include "sqlite3.h"
@@ -18,6 +19,7 @@ namespace storage
 
 	class Storage final : public IStorage
 	{
+		using Str = std::tuple<int, std::string, std::string >;
 	private:
 		sqlite3* _db= nullptr;
 		char* _errMsg{};
@@ -30,6 +32,8 @@ namespace storage
 			}
 			return code;
 		}
+
+		std::vector<std::vector<Str>> _collections;
 	public:
 		Storage() : _db(nullptr) { checkRes(sqlite3_open("DB", &_db), "Error open DB"); };
 		void create(std::string name) override;
@@ -37,7 +41,9 @@ namespace storage
 		void insertData(std::string table, std::vector<TableLine>& data);
 		void truncate(std::string& table) override;
 		void intersection(std::string tableA, std::string tableB) override;
-		void symmetricDifference(std::string& tableA, std::string& tableB)override;
+		void symmetricDifference(std::string tableA, std::string tableB)override;
 		~Storage()noexcept override { checkRes(sqlite3_close(_db), "Error close DB"); };
+
+		void printTable(int num);
 	};
 }

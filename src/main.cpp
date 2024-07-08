@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
 			db->insertData("B", forTableB);
 
 			db->intersection("A", "B");
+			db->symmetricDifference("A", "B");
 
 			Server server(context, port, db);
 			context.run();
