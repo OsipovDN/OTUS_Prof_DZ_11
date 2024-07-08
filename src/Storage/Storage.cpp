@@ -2,6 +2,17 @@
 
 namespace storage
 {
+	int Storage::checkRes(int code, char* msg)
+	{
+		UNUSED(msg);
+		if (code != SQLITE_OK) {
+			sqlite3_close(_db);
+			throw std::runtime_error(_errMsg);
+		}
+		return code;
+	}
+
+
 	void Storage::create(std::string name)
 	{
 		std::string request = "CREATE TABLE IF NOT EXISTS " + name +

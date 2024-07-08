@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 
 #include "Session.h"
-#include "IStorage.h"
+#include "StorageController.h"
 
 namespace asio = boost::asio;
 using tcp = boost::asio::ip::tcp;
@@ -11,10 +11,10 @@ using tcp = boost::asio::ip::tcp;
 class Server
 {
 public:
-	Server(asio::io_context& cont, short port, std::shared_ptr<IStorage> db)
+	Server(asio::io_context& cont, short port, std::shared_ptr<StorageController> controller)
 		: _acceptor(cont, tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port)),
 		_socket(cont),
-		_db(db)
+		_controller(controller)
 	{
 		std::cout << __FUNCTION__ << std::endl;
 		do_accept();
@@ -32,7 +32,7 @@ private:
 				if (!ec)
 				{
 					std::cout << "Connection\n";
-					auto session = std::make_shared<Session>(std::move(_socket), _db);
+					auto session = std::make_shared<Session>(std::move(_socket), _controller);
 					_session.push_back(session);
 					session->start();
 				}
@@ -43,6 +43,6 @@ private:
 	tcp::acceptor _acceptor;
 	tcp::socket _socket;
 	std::vector<std::shared_ptr <Session>> _session;
-	std::shared_ptr<IStorage> _db;
+	std::shared_ptr<StorageController> _controller;
 	std::size_t _bulkSize;
 };
