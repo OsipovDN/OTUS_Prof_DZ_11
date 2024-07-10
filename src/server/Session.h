@@ -14,13 +14,17 @@ public:
 		: _socket(std::move(socket)),
 		_controller(controller)
 	{
-
 		std::cout << __FUNCTION__ << std::endl;
 	}
 
 	void start()
 	{
-		do_read();
+		asio::async_read_until(_socket,
+			_streambuf,
+			'\n',
+			std::bind(&Session::handle_read_header, this,
+				std::placeholders::_1,
+				std::placeholders::_2));
 	}
 
 	~Session()
@@ -36,22 +40,33 @@ private:
 		if (!err)
 		{
 			auto msg = std::istream(&_streambuf).rdbuf();
-			std::string str(std::istreambuf_iterator<char>(msg), {});
-			std::cout << "message: " << str;
-			do_read();
+			std::string str{ std::istreambuf_iterator<char>{msg},{} };
+			_controller->postRequest(str);
+
+			std::string responce = _controller->getResponce();
+			do_write(responce);
+			start();
 		}
+		else
+		{
+			std::cout << __FUNCTION__ << std::endl;
+		}
+
 	}
-	void do_read()
+
+	void do_write(std::string msg)
 	{
-		asio::async_read_until(_socket,
-			_streambuf,
-			'\n',
-			std::bind(&Session::handle_read_header, this,
-				std::placeholders::_1,
-				std::placeholders::_2));
+		asio::async_write(_socket, asio::buffer(msg.c_str(), msg.size()),
+			[this, self = shared_from_this()](boost::system::error_code ec, std::size_t /*length*/)
+		{
+			if (!ec)
+			{
+				self->start();
+			}
+		});
 	}
 
 	tcp::socket _socket;
-	boost::asio::streambuf _streambuf;
+	asio::streambuf _streambuf;
 	std::shared_ptr<StorageController> _controller;
 };

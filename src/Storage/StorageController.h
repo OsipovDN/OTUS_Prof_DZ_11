@@ -30,21 +30,21 @@ public:
 	StorageController() :
 		_storage(std::make_unique<storage::Storage>())
 	{
-		_storage->create("A");
-		_storage->create("B");
-		_storage->insertData("A", forTableA);
-		_storage->insertData("B", forTableB);
+		//_storage->create("A");
+		//_storage->create("B");
+		//_storage->insertData("A", forTableA);
+		//_storage->insertData("B", forTableB);
 	}
 
 	void postRequest(std::string request)
 	{
-		_storage->intersection("A", "B");
-		_storage->symmetricDifference("A", "B");
+		//_storage->intersection("A", "B");
+		//_storage->symmetricDifference("A", "B");
 
 	}
 	std::string getResponce()
 	{
-
+		return std::string{"ok"};
 	}
 
 };

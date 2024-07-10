@@ -36,6 +36,10 @@ private:
 					_session.push_back(session);
 					session->start();
 				}
+				else
+				{
+					std::cout << __FUNCTION__ << std::endl;
+				}
 				do_accept();
 			});
 	}
