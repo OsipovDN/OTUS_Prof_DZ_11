@@ -1,6 +1,7 @@
 #pragma once
 #include "StorageController.h"
 
+
 #define UNUSED(x) (void)(x)
 
 namespace asio = boost::asio;
@@ -10,7 +11,7 @@ using tcp = boost::asio::ip::tcp;
 class Session : public std::enable_shared_from_this<Session>
 {
 public:
-	Session(tcp::socket socket, std::shared_ptr<StorageController> controller)
+	Session(tcp::socket&& socket, std::shared_ptr<StorageController> controller)
 		: _socket(std::move(socket)),
 		_controller(controller)
 	{
@@ -22,7 +23,7 @@ public:
 		asio::async_read_until(_socket,
 			_streambuf,
 			'\n',
-			std::bind(&Session::handle_read_header, this,
+			std::bind(&Session::handle_read_header, shared_from_this(),
 				std::placeholders::_1,
 				std::placeholders::_2));
 	}
@@ -34,7 +35,7 @@ public:
 
 private:
 
-	void handle_read_header(const boost::system::error_code& err, std::size_t bytes_transferred)
+	void handle_read_header(boost::system::error_code err, std::size_t bytes_transferred)
 	{
 		UNUSED(bytes_transferred);
 		if (!err)
@@ -42,14 +43,17 @@ private:
 			auto msg = std::istream(&_streambuf).rdbuf();
 			std::string str{ std::istreambuf_iterator<char>{msg},{} };
 			_controller->postRequest(str);
-
+			
 			std::string responce = _controller->getResponce();
 			do_write(responce);
+			_streambuf.consume(bytes_transferred);
 			start();
 		}
 		else
 		{
-			std::cout << __FUNCTION__ << std::endl;
+			std::cout << err.message() << std::endl;
+			_socket.close(err);
+			return;
 		}
 
 	}
@@ -67,6 +71,7 @@ private:
 	}
 
 	tcp::socket _socket;
+
 	asio::streambuf _streambuf;
 	std::shared_ptr<StorageController> _controller;
 };

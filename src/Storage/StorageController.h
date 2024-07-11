@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 #include "Storage.h"
 struct TableLine {};
@@ -40,11 +41,22 @@ public:
 	{
 		//_storage->intersection("A", "B");
 		//_storage->symmetricDifference("A", "B");
-
+		std::stringstream ss(request);
+		std::vector<std::string> req;
+		std::string word;
+		while (ss)
+		{
+			if (ss.peek() == '\n') // detect '\n'
+			{
+				break;
+			}
+			ss >> word;
+			req.push_back(word);
+		}
 	}
 	std::string getResponce()
 	{
-		return std::string{"ok"};
+		return std::string{"ok\n"};
 	}
 
 };

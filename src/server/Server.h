@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <optional>
 //Boost
 #include <boost/asio.hpp>
 
@@ -12,10 +14,11 @@ class Server
 {
 public:
 	Server(asio::io_context& cont, short port, std::shared_ptr<StorageController> controller)
-		: _acceptor(cont, tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port)),
-		_socket(cont),
+		:_context(cont),
+		_acceptor(cont, tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port)),
 		_controller(controller)
 	{
+		
 		std::cout << __FUNCTION__ << std::endl;
 		do_accept();
 	}
@@ -26,15 +29,16 @@ public:
 private:
 	void do_accept()
 	{
-		_acceptor.async_accept(_socket,
+		_socket=std::make_shared<tcp::socket>(_context);
+		_acceptor.async_accept(*_socket,
 			[this](boost::system::error_code ec)
 			{
 				if (!ec)
 				{
-					std::cout << "Connection\n";
-					auto session = std::make_shared<Session>(std::move(_socket), _controller);
-					_session.push_back(session);
-					session->start();
+
+					_session = std::make_shared<Session>(std::move(*_socket), _controller);
+
+					_session->start();
 				}
 				else
 				{
@@ -44,9 +48,9 @@ private:
 			});
 	}
 
+	asio::io_context& _context;
 	tcp::acceptor _acceptor;
-	tcp::socket _socket;
-	std::vector<std::shared_ptr <Session>> _session;
+	std::shared_ptr<tcp::socket> _socket;
+	std::shared_ptr <Session> _session;
 	std::shared_ptr<StorageController> _controller;
-	std::size_t _bulkSize;
 };
